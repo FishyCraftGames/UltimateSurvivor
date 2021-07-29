@@ -98,12 +98,12 @@
         var X = 0;
         var Y = 0;
 
-        var woodBlocks = 0;
-        var stoneBlocks = 0;
+        var woodBlocks = 100;
+        var stoneBlocks = 49;
         var fishyBlocks = 0;
         var food = 20;
         var ttime = 0;
-        var infishytyStones = 0;
+        var infishytyStones = 5;
         var youWon = 0;
         var youGauntlet = 0;
 
@@ -523,7 +523,6 @@
                             }
                         }
                         else if (intersect.object.name == 'fishypillar') {
-                            scene.remove(intersect.object);
 
                             objects.splice(objects.indexOf(intersect.object), 1);
                             objects2.splice(objects2.indexOf(intersect.object), 1);
@@ -628,6 +627,7 @@
             else if (youWon == 1) {
                 food = 100;
                 document.getElementById("won").innerHTML = ' --------- Master of Infishyty Stones';
+                cubespillar.position.y += 0.4;
             }
 
             if (youGauntlet == 0) {
