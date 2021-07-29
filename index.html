@@ -445,6 +445,8 @@
         }
 
         function onPointerDown(event) {
+            e.preventDefault();
+
             if (food > 0) {
                 //pointer.set((event.clientX / window.innerWidth) * 2 - 1, - (event.clientY / window.innerHeight) * 2 + 1);
                 pointer.set(0, 0);
@@ -609,7 +611,8 @@
             document.getElementById("stoneblocks").innerHTML = stoneBlocks;
             document.getElementById("fishyblocks").innerHTML = fishyBlocks;
             document.getElementById("essen").innerHTML = Math.round(food);
-            document.getElementById("Time").innerHTML = Math.round(ttime / 60 * 100) / 60;
+            let secs = Math.round(ttime / 60 * 100);
+            document.getElementById("Time").innerHTML = String(Math.floor(secs / 60)) + ":" + ('00' + String(secs % 60)).slice(-2);
             if (youWon == 0) {
 		food -= 0.01
                 ttime += 0.0166666666666667;
