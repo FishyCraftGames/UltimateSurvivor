@@ -611,7 +611,7 @@
             document.getElementById("essen").innerHTML = Math.round(food);
             document.getElementById("Time").innerHTML = Math.round(ttime / 60 * 100);
             if (youWon == 0) {
-		    food -= 0.01
+		food -= 0.01
                 ttime += 0.0166666666666667;
             }
             else if (youWon == 1) {
@@ -688,8 +688,8 @@
             direction.x = Number(moveRight) - Number(moveLeft);
             direction.normalize();
 
-	    if (moveForward || moveBackward) velocity.z -= direction.z * 800.0 * delta;
-            if (moveLeft || moveRight) velocity.x -= direction.x * 800.0 * delta;
+	    if (moveForward || moveBackward) velocity.z -= direction.z * 400.0 * delta;
+            if (moveLeft || moveRight) velocity.x -= direction.x * 400.0 * delta;
 		
             if (onObject === true) {
                 velocity.y = Math.max(0, velocity.y);
