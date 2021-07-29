@@ -41,29 +41,13 @@
                 Move: WASD<br />
                 Jump: SPACE<br />
                 Look: MOUSE<br />
-                Place Block: Right MOUSE CLICK<br />
-                Delete Block: Left MOUSE CLICK<br />
+                Place Block: MOUSE CLICK<br />
+                Delete Block: SHIFT + MOUSE CLICK<br />
                 Switch Block: QE
             </p>
         </div>
     </div>
     <script type="module">
-	function downloadString(text, fileType, fileName) {
-		var blob = new Blob([text], { type: fileType });
-
-		var a = document.createElement('a');
-		a.download = fileName;
-		a.href = URL.createObjectURL(blob);
-		a.dataset.downloadurl = [fileType, a.download, a.href].join(':');
-		a.style.display = "none";
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-		setTimeout(function() { URL.revokeObjectURL(a.href); }, 1500);
-	}
-
-	const playerFatAss = 5.0;
-
         import * as THREE from 'https://cdn.skypack.dev/three@0.130.0/build/three.module.js';
         import { PointerLockControls } from 'https://cdn.skypack.dev/three@0.130.0/examples/jsm/controls/PointerLockControls.js';
         import { GLTFExporter } from 'https://cdn.skypack.dev/three@0.130.0/examples/jsm/exporters/GLTFExporter.js';
@@ -91,7 +75,7 @@
         let cubes3;
         let cubes4;
         let cubespillar;
-        let pointer, raycaster2;
+        let pointer, raycaster2, isShiftDown = false;
 
         let rollOverMesh, rollOverMaterial;
         let cubeGeo, cubeMaterial;
@@ -267,17 +251,23 @@
         const instructions = document.getElementById('instructions');
 
         instructions.addEventListener('click', function () {
+
             controls.lock();
+
         });
 
         controls.addEventListener('lock', function () {
+
             instructions.style.display = 'none';
             blocker.style.display = 'none';
+
         });
 
         controls.addEventListener('unlock', function () {
+
             blocker.style.display = 'block';
             instructions.style.display = '';
+
         });
 
         scene.add(controls.getObject());
@@ -285,6 +275,7 @@
         const onKeyDown = function (event) {
             if (food > 0) {
                 switch (event.code) {
+
                     case 'ArrowUp':
                     case 'KeyW':
                         moveForward = true;
@@ -306,9 +297,10 @@
                         break;
 
                     case 'Space':
-                        if (canJump === true) velocity.y += 200;
+                        if (canJump === true) velocity.y += 350;
                         canJump = false;
                         break;
+
                 }
             }
 
@@ -316,6 +308,7 @@
 
         const onKeyUp = function (event) {
             switch (event.code) {
+
                 case 'ArrowUp':
                 case 'KeyW':
                     moveForward = false;
@@ -335,6 +328,7 @@
                 case 'KeyD':
                     moveRight = false;
                     break;
+
             }
 
         };
@@ -454,10 +448,10 @@
                 const intersects = raycaster2.intersectObjects(objects2);
 
                 if (intersects.length > 0) {
+
                     const intersect = intersects[0];
 
-                    if (event.button === 0) {
-			console.log(1);
+                    if (isShiftDown) {
 
                         if (intersect.object !== plane && intersect.object.name !== 'tree' && intersect.object.name !== 'wood' && intersect.object.name !== 'stone' && intersect.object.name !== 'fishy' && intersect.object.name !== 'infishytyStone' && intersect.object.name !== 'fishyEmpty' && intersect.object.name !== 'fishypillar') {
 
@@ -594,13 +588,29 @@
 
         }
 
-        function onDocumentKeyDown(event) {}
+        function onDocumentKeyDown(event) {
 
-        function onDocumentKeyUp(event) {}
+            switch (event.keyCode) {
+
+                case 16: isShiftDown = true; break;
+
+            }
+
+        }
+
+        function onDocumentKeyUp(event) {
+
+            switch (event.keyCode) {
+
+                case 16: isShiftDown = false; break;
+
+            }
+
+        }
 
         function Save() {
             exporter.parse(scene, function (gltf) {
-                downloadString(JSON.stringify(gltf), "text/gltf", "scene.gltf");
+                console.log(JSON.stringify(gltf));
             }, { trs: true });
         }
 
@@ -609,9 +619,9 @@
             document.getElementById("stoneblocks").innerHTML = stoneBlocks;
             document.getElementById("fishyblocks").innerHTML = fishyBlocks;
             document.getElementById("essen").innerHTML = Math.round(food);
-            document.getElementById("Time").innerHTML = Math.round(ttime / 60 * 100) / 60;
+            document.getElementById("Time").innerHTML = ttime / 60;
             if (youWon == 0) {
-		food -= 0.01
+                food -= 0.01;
                 ttime += 0.0166666666666667;
             }
             else if (youWon == 1) {
@@ -621,7 +631,7 @@
             }
 
             if (youGauntlet == 0) {
-                if (infishytyStones == 5) {
+                if (infishytyStones >= 5) {
                     if (woodBlocks >= 100 && stoneBlocks >= 50) {
                         alert('You got the Materials now go to the fishy pillar and destroy it');
                         makePillar();
@@ -653,47 +663,32 @@
 
             const time = performance.now();
 
-            var onObject = false;
-
             raycaster.ray.origin.copy(controls.getObject().position);
             raycaster.ray.origin.y -= 10;
-            let tx = raycaster.ray.origin.x;
-            let tz = raycaster.ray.origin.z;
 
-            raycaster.ray.origin.x = tx - playerFatAss;
-            raycaster.ray.origin.z = tz - playerFatAss;
-            onObject = onObject || (raycaster.intersectObjects(objects).length > 0);
+            const intersections = raycaster.intersectObjects(objects);
 
-            raycaster.ray.origin.x = tx + playerFatAss;
-            raycaster.ray.origin.z = tz - playerFatAss;
-            onObject = onObject || (raycaster.intersectObjects(objects).length > 0);
-
-            raycaster.ray.origin.x = tx - playerFatAss;
-            raycaster.ray.origin.z = tz + playerFatAss;
-            onObject = onObject || (raycaster.intersectObjects(objects).length > 0);
-
-            raycaster.ray.origin.x = tx + playerFatAss;
-            raycaster.ray.origin.z = tz + playerFatAss;
-            onObject = onObject || (raycaster.intersectObjects(objects).length > 0);
+            const onObject = intersections.length > 0;
 
             const delta = (time - prevTime) / 1000;
 
             velocity.x -= velocity.x * 5.0 * delta;
             velocity.z -= velocity.z * 5.0 * delta;
 
-            velocity.y -= 9.8 * 60.0 * delta;
-            velocity.y = Math.min(velocity.y, 220.0)
+            velocity.y -= 9.8 * 100.0 * delta;
 
             direction.z = Number(moveForward) - Number(moveBackward);
             direction.x = Number(moveRight) - Number(moveLeft);
             direction.normalize();
 
-	    if (moveForward || moveBackward) velocity.z -= direction.z * 400.0 * delta;
+            if (moveForward || moveBackward) velocity.z -= direction.z * 400.0 * delta;
             if (moveLeft || moveRight) velocity.x -= direction.x * 400.0 * delta;
-		
+
             if (onObject === true) {
+
                 velocity.y = Math.max(0, velocity.y);
                 canJump = true;
+
             }
 
             controls.moveRight(- velocity.x * delta);
