@@ -41,8 +41,8 @@
                 Move: WASD<br />
                 Jump: SPACE<br />
                 Look: MOUSE<br />
-                Place Block: MOUSE CLICK<br />
-                Delete Block: SHIFT + MOUSE CLICK<br />
+                Place Block: Right MOUSE CLICK<br />
+                Delete Block: Left MOUSE CLICK<br />
                 Switch Block: QE
             </p>
         </div>
@@ -106,7 +106,6 @@
         let moveLeft = false;
         let moveRight = false;
         let canJump = false;
-	let sprinting = false;
 
         var fishyTanks = 30;
         var trees = 350;
@@ -310,10 +309,6 @@
                         if (canJump === true) velocity.y += 200;
                         canJump = false;
                         break;
-
-		    case 'ShiftLeft':
-			sprinting = true;
-			break;
                 }
             }
 
@@ -340,10 +335,6 @@
                 case 'KeyD':
                     moveRight = false;
                     break;
-
-		case 'ShiftLeft':
-		    sprinting = false;
-		    break;
             }
 
         };
@@ -701,14 +692,9 @@
             direction.x = Number(moveRight) - Number(moveLeft);
             direction.normalize();
 
-	    if (!sprinting) {
-	            if (moveForward || moveBackward) velocity.z -= direction.z * 400.0 * delta;
-        	    if (moveLeft || moveRight) velocity.x -= direction.x * 400.0 * delta;
-	    } else {
-		    if (moveForward || moveBackward) velocity.z -= direction.z * 800.0 * delta;
-                    if (moveLeft || moveRight) velocity.x -= direction.x * 800.0 * delta;
-	    }
-
+	    if (moveForward || moveBackward) velocity.z -= direction.z * 800.0 * delta;
+            if (moveLeft || moveRight) velocity.x -= direction.x * 800.0 * delta;
+		
             if (onObject === true) {
                 velocity.y = Math.max(0, velocity.y);
                 canJump = true;
