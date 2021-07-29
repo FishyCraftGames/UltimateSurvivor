@@ -611,6 +611,7 @@
             document.getElementById("essen").innerHTML = Math.round(food);
             document.getElementById("Time").innerHTML = Math.round(ttime / 60 * 100);
             if (youWon == 0) {
+		    food -= 0.01
                 ttime += 0.0166666666666667;
             }
             else if (youWon == 1) {
