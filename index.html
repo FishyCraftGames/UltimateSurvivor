@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>FishyCraft 🐠</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+    <style>
+        #blocker {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        #instructions {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h>🌳Wood: <span id="blocks"></span> ------------------ 🗻Stone: <span id="stoneblocks"></span> ------------------ 🐠FishyTanks: <span id="fishyblocks"></span> ------------------ Selected Block: <span id="selected"></span> ------------------ 🍖Food: <span id="essen"></span>/100  ------------------ Time: <span id="Time"> </span><span id="won"></span></h>
+    <div id="blocker">
+        <div id="instructions">
+            <p style="font-size:36px">
+                Click here to play
+            </p>
+            <p>
+                Move: WASD<br />
+                Jump: SPACE<br />
+                Look: MOUSE<br />
+                Place Block: MOUSE CLICK<br />
+                Delete Block: SHIFT + MOUSE CLICK<br />
+                Switch Block: QE
+            </p>
+        </div>
+    </div>
+    <script type="module">
+        import * as THREE from 'https://cdn.skypack.dev/three@0.130.0/build/three.module.js';
+        import { PointerLockControls } from 'https://cdn.skypack.dev/three@0.130.0/examples/jsm/controls/PointerLockControls.js';
+        import { GLTFExporter } from 'https://cdn.skypack.dev/three@0.130.0/examples/jsm/exporters/GLTFExporter.js';
+
+        const scene = new THREE.Scene();
+
+        var textureLoader = new THREE.TextureLoader();
+        textureLoader.load('env.jpg', function (texture) {
+            scene.environment = texture;
+        });
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        let controls;
+
+        const objects = [];
+
+        let raycaster;
+
+        var materialSwitch = 0;
+
+        let plane;
+        let cubes;
+        let cubes2;
+        let cubes3;
+        let cubes4;
+        let cubespillar;
+        let pointer, raycaster2, isShiftDown = false;
+
+        let rollOverMesh, rollOverMaterial;
+        let cubeGeo, cubeMaterial;
+
+        const objects2 = [];
+
+        let blockTexture = 'texture6';
+        blockTexture;
+
+        let moveForward = false;
+        let moveBackward = false;
+        let moveLeft = false;
+        let moveRight = false;
+        let canJump = false;
+
+        var fishyTanks = 30;
+        var trees = 350;
+        var stones = 80;
+
+        var X = 0;
+        var Y = 0;
+
+        var woodBlocks = 0;
+        var stoneBlocks = 0;
+        var fishyBlocks = 0;
+        var food = 20;
+        var ttime = 0;
+        var infishytyStones = 0;
+        var youWon = 0;
+        var youGauntlet = 0;
+
+        const exporter = new GLTFExporter();
+
+
+        let prevTime = performance.now();
+        const velocity = new THREE.Vector3();
+        const direction = new THREE.Vector3();
+
+        var renderer = new THREE.WebGLRenderer({ alpha: false });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        renderer.setClearColor(0x33E9FF);
+        renderer.shadowMap.enabled = true;
+
+        const geometry = new THREE.BoxGeometry(1000, 22, 1000);
+        const cubegeometry = new THREE.BoxGeometry(10, 10, 10);
+        const cubegeometry2 = new THREE.BoxGeometry(10.15, 30, 10.15);
+        const cubegeometrypillar = new THREE.BoxGeometry(10.15, 120, 10.15);
+        const cubegeometry3 = new THREE.BoxGeometry(30, 30, 30);
+        const cubegeometry69 = new THREE.BoxGeometry(1, 1, 3);
+        var texture = new THREE.TextureLoader().load('FishyTank.png');
+        texture.magFilter = THREE.NearestFilter;
+        const instancematerial = new THREE.MeshStandardMaterial({ map: texture });
+        var texture2 = new THREE.TextureLoader().load('boden.png');
+        texture2.magFilter = THREE.NearestFilter;
+        var texture3 = new THREE.TextureLoader().load('Baum.png');
+        texture3.magFilter = THREE.NearestFilter;
+        var texture4 = new THREE.TextureLoader().load('Blatt.png');
+        texture4.magFilter = THREE.NearestFilter;
+        var texture44 = new THREE.TextureLoader().load('Stein.png');
+        texture44.magFilter = THREE.NearestFilter;
+        var texture56 = new THREE.TextureLoader().load('infishytyStone.png');
+        texture56.magFilter = THREE.NearestFilter;
+        var texturepillar = new THREE.TextureLoader().load('infishytyPillar.png');
+        texturepillar.magFilter = THREE.NearestFilter;
+        const instancematerial2 = new THREE.MeshStandardMaterial({ map: texture3 });
+        const instancematerialpillar = new THREE.MeshStandardMaterial({ map: texturepillar });
+        const instancematerial69 = new THREE.MeshStandardMaterial({ map: texture56 });
+        const instancematerial3 = new THREE.MeshStandardMaterial({ map: texture4 });
+        const stonematerial = new THREE.MeshStandardMaterial({ map: texture44 });
+        const material = new THREE.MeshStandardMaterial({ map: texture2 });
+        const cube = new THREE.Mesh(geometry, material);
+
+        cube.receiveShadow = true;
+
+        scene.add(cube);
+        objects.push(cube);
+
+        for (let i = 0; i < fishyTanks; i++) {
+            getRandomInt(-50, 50, 10);
+            cubes = new THREE.Mesh(cubegeometry, instancematerial);
+            objects.push(cubes);
+            objects2.push(cubes);
+            cubes.position.set(X + 6.25, 6.25, Y + 6.25);
+            cubes.castShadow = true;
+            cubes.receiveShadow = true;
+            scene.add(cubes);
+            cubes.name = 'fishy';
+        }
+        function makePillar() {
+            getRandomInt(-50, 50, 10);
+            cubespillar = new THREE.Mesh(cubegeometrypillar, instancematerialpillar);
+            objects.push(cubespillar);
+            objects2.push(cubespillar);
+            cubespillar.position.set(X + 6.25, 6.25, Y + 6.25);
+            cubespillar.castShadow = true;
+            cubespillar.receiveShadow = true;
+            scene.add(cubespillar);
+            cubespillar.name = 'fishypillar';
+        }
+        for (let i = 0; i < 5; i++) {
+            getRandomInt(-50, 50, 10);
+            cubes = new THREE.Mesh(cubegeometry69, instancematerial69);
+            objects.push(cubes);
+            objects2.push(cubes);
+            cubes.position.set(X + 6.25, 6.25, Y + 6.25);
+            cubes.castShadow = true;
+            cubes.receiveShadow = true;
+            scene.add(cubes);
+            cubes.name = 'infishytyStone';
+        }
+        for (let i = 0; i < stones; i++) {
+            getRandomInt(-50, 50, 10);
+            cubes4 = new THREE.Mesh(cubegeometry, stonematerial);
+            objects.push(cubes4);
+            objects2.push(cubes4);
+            cubes4.position.set(X + 6.25, 6.25, Y + 6.25);
+            cubes4.castShadow = true;
+            cubes4.receiveShadow = true;
+            scene.add(cubes4);
+            cubes4.name = 'stone';
+        }
+        for (let i = 0; i < trees; i++) {
+            getRandomInt(-17, 17, 30);
+            cubes2 = new THREE.Mesh(cubegeometry2, instancematerial2);
+            cubes3 = new THREE.Mesh(cubegeometry3, instancematerial3);
+            objects.push(cubes2);
+            objects.push(cubes3);
+            objects2.push(cubes2);
+            objects2.push(cubes3);
+            cubes2.position.set(X + 6.25, 10 + 6.25, Y + 6.25);
+            cubes3.position.set(X + 6.25, 30 + 6.25, Y + 6.25);
+            cubes2.castShadow = true;
+            cubes3.castShadow = true;
+            cubes2.receiveShadow = true;
+            cubes3.receiveShadow = true;
+            scene.add(cubes2);
+            scene.add(cubes3);
+            cubes2.name = 'tree';
+        }
+
+        scene.add(cubes);
+
+        objects.push(cubes);
+        objects2.push(cubes);
+
+        const light2 = new THREE.AmbientLight(0x404040);
+        scene.add(light2);
+
+        var light = new THREE.DirectionalLight(0xffffff, 1.5);
+        light.position.set(500, 1000, 1000);
+        light.castShadow = true;
+        light.shadow.camera.far = 50000;
+        light.shadow.camera.right = 1500;
+        light.shadow.camera.left = - 1500;
+        light.shadow.camera.top = 1500;
+        light.shadow.camera.bottom = - 1500;
+        light.shadow.mapSize.width = 30000;
+        light.shadow.mapSize.height = 30000;
+        scene.add(light);
+
+        cube.position.set(0, -10, 0)
+        camera.position.x = 100;
+        camera.position.y = 70;
+        camera.position.z = 10;
+        camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+        controls = new PointerLockControls(camera, document.body);
+
+        alert('eat fish so you dont starve to death');
+
+        const blocker = document.getElementById('blocker');
+        const instructions = document.getElementById('instructions');
+
+        instructions.addEventListener('click', function () {
+
+            controls.lock();
+
+        });
+
+        controls.addEventListener('lock', function () {
+
+            instructions.style.display = 'none';
+            blocker.style.display = 'none';
+
+        });
+
+        controls.addEventListener('unlock', function () {
+
+            blocker.style.display = 'block';
+            instructions.style.display = '';
+
+        });
+
+        scene.add(controls.getObject());
+
+        const onKeyDown = function (event) {
+            if (food > 0) {
+                switch (event.code) {
+
+                    case 'ArrowUp':
+                    case 'KeyW':
+                        moveForward = true;
+                        break;
+
+                    case 'ArrowLeft':
+                    case 'KeyA':
+                        moveLeft = true;
+                        break;
+
+                    case 'ArrowDown':
+                    case 'KeyS':
+                        moveBackward = true;
+                        break;
+
+                    case 'ArrowRight':
+                    case 'KeyD':
+                        moveRight = true;
+                        break;
+
+                    case 'Space':
+                        if (canJump === true) velocity.y += 350;
+                        canJump = false;
+                        break;
+
+                }
+            }
+
+        };
+
+        const onKeyUp = function (event) {
+            switch (event.code) {
+
+                case 'ArrowUp':
+                case 'KeyW':
+                    moveForward = false;
+                    break;
+
+                case 'ArrowLeft':
+                case 'KeyA':
+                    moveLeft = false;
+                    break;
+
+                case 'ArrowDown':
+                case 'KeyS':
+                    moveBackward = false;
+                    break;
+
+                case 'ArrowRight':
+                case 'KeyD':
+                    moveRight = false;
+                    break;
+
+            }
+
+        };
+
+        document.addEventListener('keydown', onKeyDown);
+        document.addEventListener('keyup', onKeyUp);
+
+        raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, - 1, 0), 0, 10);
+
+        function getRandomInt(min, max, offset) {
+            X = Math.floor(Math.random() * (max - min) + min) * offset;
+            Y = Math.floor(Math.random() * (max - min) + min) * offset;
+        }
+
+        animate();
+        switchBlock();
+
+
+        cubeGeo = new THREE.BoxGeometry(10.05, 10.05, 10.05);
+
+        const rollOverGeo = new THREE.BoxGeometry(10.1, 10.1, 10.1);
+
+        function switchBlock() {
+            document.addEventListener('keydown', function (event) {
+                if (event.keyCode == 81) {
+                    if (materialSwitch > 0) {
+                        materialSwitch--;
+                    }
+                }
+                if (event.keyCode == 69) {
+                    if (materialSwitch < 2) {
+                        materialSwitch++;
+                    }
+                }
+                if (event.keyCode == 80) {
+                    Save();
+                }
+            });
+        }
+
+        function updateMaterial() {
+            if (materialSwitch == 0) {
+                blockTexture = 'Block.png';
+            }
+            else if (materialSwitch == 1) {
+                blockTexture = 'Stein.png';
+            }
+            else if (materialSwitch == 2) {
+                blockTexture = 'FishyTank2.png';
+            }
+
+            var texture6 = new THREE.TextureLoader().load(blockTexture);
+            texture6.magFilter = THREE.NearestFilter;
+
+            cubeMaterial = new THREE.MeshStandardMaterial({ map: texture6 });
+            rollOverMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0.5, transparent: true });
+        }
+
+
+        rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
+        scene.add(rollOverMesh);
+
+        raycaster2 = new THREE.Raycaster();
+        pointer = new THREE.Vector2();
+
+        const geometry77 = new THREE.PlaneGeometry(1000, 1000);
+        geometry77.rotateX(- Math.PI / 2);
+
+        plane = new THREE.Mesh(geometry77, new THREE.MeshBasicMaterial({ visible: false }));
+        scene.add(plane);
+        plane.position.set(0, -5, 0);
+
+        objects2.push(plane);
+
+        document.addEventListener('pointermove', onPointerMove);
+        document.addEventListener('pointerdown', onPointerDown);
+        document.addEventListener('keydown', onDocumentKeyDown);
+        document.addEventListener('keyup', onDocumentKeyUp);
+
+        window.addEventListener('resize', onWindowResize);
+
+        function onWindowResize() {
+
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+        }
+
+        function onPointerMove(event) {
+            if (food > 0) {
+                //pointer.set((event.clientX / window.innerWidth) * 2 - 1, - (event.clientY / window.innerHeight) * 2 + 1);
+                pointer.set(0, 0);
+
+                raycaster2.setFromCamera(pointer, camera);
+
+                const intersects = raycaster2.intersectObjects(objects2);
+
+                if (intersects.length > 0) {
+
+                    const intersect = intersects[0];
+
+                    rollOverMesh.position.copy(intersect.point).add(intersect.face.normal);
+                    rollOverMesh.position.divideScalar(10).floor().multiplyScalar(10).addScalar(6.25);
+                }
+            }
+        }
+
+        function onPointerDown(event) {
+            if (food > 0) {
+                //pointer.set((event.clientX / window.innerWidth) * 2 - 1, - (event.clientY / window.innerHeight) * 2 + 1);
+                pointer.set(0, 0);
+
+                raycaster2.setFromCamera(pointer, camera);
+
+                const intersects = raycaster2.intersectObjects(objects2);
+
+                if (intersects.length > 0) {
+
+                    const intersect = intersects[0];
+
+                    if (isShiftDown) {
+
+                        if (intersect.object !== plane && intersect.object.name !== 'tree' && intersect.object.name !== 'wood' && intersect.object.name !== 'stone' && intersect.object.name !== 'fishy' && intersect.object.name !== 'infishytyStone' && intersect.object.name !== 'fishyEmpty' && intersect.object.name !== 'fishypillar') {
+
+                            scene.remove(intersect.object);
+
+                            objects.splice(objects.indexOf(intersect.object), 1);
+                            objects2.splice(objects2.indexOf(intersect.object), 1);
+
+                        }
+                        else if (intersect.object.name == 'tree') {
+
+                            scene.remove(intersect.object);
+
+                            objects.splice(objects.indexOf(intersect.object), 1);
+                            objects2.splice(objects2.indexOf(intersect.object), 1);
+
+                            woodBlocks += 2;
+                        }
+                        else if (intersect.object.name == 'wood') {
+
+                            scene.remove(intersect.object);
+
+                            objects.splice(objects.indexOf(intersect.object), 1);
+                            objects2.splice(objects2.indexOf(intersect.object), 1);
+
+                            woodBlocks++;
+                        }
+                        else if (intersect.object.name == 'stone') {
+
+                            scene.remove(intersect.object);
+
+                            objects.splice(objects.indexOf(intersect.object), 1);
+                            objects2.splice(objects2.indexOf(intersect.object), 1);
+
+                            stoneBlocks++;
+                        }
+                        else if (intersect.object.name == 'fishy') {
+
+                            scene.remove(intersect.object);
+
+                            objects.splice(objects.indexOf(intersect.object), 1);
+                            objects2.splice(objects2.indexOf(intersect.object), 1);
+
+                            fishyBlocks++;
+                            food += 15;
+                        }
+                        else if (intersect.object.name == 'fishyEmpty') {
+
+                            scene.remove(intersect.object);
+
+                            objects.splice(objects.indexOf(intersect.object), 1);
+                            objects2.splice(objects2.indexOf(intersect.object), 1);
+
+                            fishyBlocks++;
+                        }
+                        else if (intersect.object.name == 'infishytyStone') {
+
+                            scene.remove(intersect.object);
+
+                            objects.splice(objects.indexOf(intersect.object), 1);
+                            objects2.splice(objects2.indexOf(intersect.object), 1);
+
+                            infishytyStones++;
+                            if (infishytyStones < 5) {
+                                alert('You found ' + infishytyStones + ' of 5 Infishyty Stones');
+                            }
+                            else if (infishytyStones == 5) {
+                                alert('You found all Infishyty Stones. Get 50 Stone and 100 Wood to build the Infishyty Gauntlet.');
+                            }
+                        }
+                        else if (intersect.object.name == 'fishypillar') {
+                            scene.remove(intersect.object);
+
+                            objects.splice(objects.indexOf(intersect.object), 1);
+                            objects2.splice(objects2.indexOf(intersect.object), 1);
+
+                            youWon = 1;
+                            alert('You Won. it took you ' + ttime / 60 + ' minuites. You now have infinite food');
+                        }
+
+                    }
+                    else if (woodBlocks > 0 && blockTexture == 'Block.png') {
+
+                        woodBlocks--;
+
+                        const voxel = new THREE.Mesh(cubeGeo, cubeMaterial);
+                        voxel.position.copy(intersect.point).add(intersect.face.normal);
+                        voxel.position.divideScalar(10).floor().multiplyScalar(10).addScalar(6.25);
+                        voxel.castShadow = true;
+                        voxel.receiveShadow = true;
+                        scene.add(voxel);
+
+                        objects.push(voxel);
+                        objects2.push(voxel);
+
+                        voxel.name = 'wood';
+
+                    }
+                    else if (stoneBlocks > 0 && blockTexture == 'Stein.png') {
+
+                        stoneBlocks--;
+
+                        const voxel = new THREE.Mesh(cubeGeo, cubeMaterial);
+                        voxel.position.copy(intersect.point).add(intersect.face.normal);
+                        voxel.position.divideScalar(10).floor().multiplyScalar(10).addScalar(6.25);
+                        voxel.castShadow = true;
+                        voxel.receiveShadow = true;
+                        scene.add(voxel);
+
+                        objects.push(voxel);
+                        objects2.push(voxel);
+
+                        voxel.name = 'stone';
+
+                    }
+                    else if (fishyBlocks > 0 && blockTexture == 'FishyTank2.png') {
+
+                        fishyBlocks--;
+
+                        const voxel = new THREE.Mesh(cubeGeo, cubeMaterial);
+                        voxel.position.copy(intersect.point).add(intersect.face.normal);
+                        voxel.position.divideScalar(10).floor().multiplyScalar(10).addScalar(6.25);
+                        voxel.castShadow = true;
+                        voxel.receiveShadow = true;
+                        scene.add(voxel);
+
+                        objects.push(voxel);
+                        objects2.push(voxel);
+
+                        voxel.name = 'fishyEmpty';
+
+                    }
+                }
+            }
+
+        }
+
+        function onDocumentKeyDown(event) {
+
+            switch (event.keyCode) {
+
+                case 16: isShiftDown = true; break;
+
+            }
+
+        }
+
+        function onDocumentKeyUp(event) {
+
+            switch (event.keyCode) {
+
+                case 16: isShiftDown = false; break;
+
+            }
+
+        }
+
+        function Save() {
+            exporter.parse(scene, function (gltf) {
+                console.log(JSON.stringify(gltf));
+            }, { trs: true });
+        }
+
+        function animate() {
+            document.getElementById("blocks").innerHTML = woodBlocks;
+            document.getElementById("stoneblocks").innerHTML = stoneBlocks;
+            document.getElementById("fishyblocks").innerHTML = fishyBlocks;
+            document.getElementById("essen").innerHTML = Math.round(food);
+            document.getElementById("Time").innerHTML = ttime / 60;
+            if (youWon == 0) {
+                food -= 0.01;
+                ttime += 0.0166666666666667;
+            }
+            else if (youWon == 1) {
+                food = 100;
+                document.getElementById("won").innerHTML = ' --------- Master of Infishyty Stones';
+            }
+
+            if (youGauntlet == 0) {
+                if (infishytyStones == 5) {
+                    if (woodBlocks >= 100 && stoneBlocks >= 50) {
+                        alert('You got the Materials now go to the fishy pillar and destroy it');
+                        makePillar();
+                        youGauntlet = 1;
+                    }
+                }
+            }
+
+            if (food < 0 && food > -0.02) {
+                alert('Game Over');
+            }
+            if (food < 0) {
+                scene.remove(lamp); // just here to crash the game
+            }
+
+            if (blockTexture == 'Stein.png') {
+                document.getElementById("selected").innerHTML = 'Stone';
+            }
+            else if (blockTexture == 'Block.png') {
+                document.getElementById("selected").innerHTML = 'Wood';
+            }
+            else if (blockTexture == 'FishyTank2.png') {
+                document.getElementById("selected").innerHTML = 'FishyTank';
+            }
+
+            updateMaterial();
+
+            requestAnimationFrame(animate);
+
+            const time = performance.now();
+
+            raycaster.ray.origin.copy(controls.getObject().position);
+            raycaster.ray.origin.y -= 10;
+
+            const intersections = raycaster.intersectObjects(objects);
+
+            const onObject = intersections.length > 0;
+
+            const delta = (time - prevTime) / 1000;
+
+            velocity.x -= velocity.x * 5.0 * delta;
+            velocity.z -= velocity.z * 5.0 * delta;
+
+            velocity.y -= 9.8 * 100.0 * delta;
+
+            direction.z = Number(moveForward) - Number(moveBackward);
+            direction.x = Number(moveRight) - Number(moveLeft);
+            direction.normalize();
+
+            if (moveForward || moveBackward) velocity.z -= direction.z * 400.0 * delta;
+            if (moveLeft || moveRight) velocity.x -= direction.x * 400.0 * delta;
+
+            if (onObject === true) {
+
+                velocity.y = Math.max(0, velocity.y);
+                canJump = true;
+
+            }
+
+            controls.moveRight(- velocity.x * delta);
+            controls.moveForward(- velocity.z * delta);
+
+            controls.getObject().position.y += (velocity.y * delta);
+
+            if (controls.getObject().position.y < 10) {
+
+                velocity.y = 0;
+                controls.getObject().position.y = 10;
+
+                canJump = true;
+
+            }
+            prevTime = time;
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
